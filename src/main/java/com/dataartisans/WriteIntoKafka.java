@@ -23,8 +23,9 @@ import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
-import org.apache.flink.streaming.connectors.kafka.KafkaSink;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer09;
 import org.apache.flink.streaming.util.serialization.DeserializationSchema;
+import org.apache.flink.streaming.util.serialization.KeyedSerializationSchemaWrapper;
 import org.apache.flink.streaming.util.serialization.SerializationSchema;
 import org.apache.flink.streaming.util.serialization.SimpleStringSchema;
 
@@ -52,9 +53,10 @@ public class WriteIntoKafka {
 		DataStream<String> messageStream = env.addSource(new SimpleStringGenerator());
 
 		// write stream to Kafka
-		messageStream.addSink(new KafkaSink<>(parameterTool.getRequired("bootstrap.servers"),
+		messageStream.addSink(new FlinkKafkaProducer09<String>(
 				parameterTool.getRequired("topic"),
-				new SimpleStringSchema()));
+				new KeyedSerializationSchemaWrapper(new SimpleStringSchema()),
+                parameterTool.getProperties()));
 
 		env.execute();
 	}
