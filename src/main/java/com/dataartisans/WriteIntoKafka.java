@@ -53,9 +53,12 @@ public class WriteIntoKafka {
 		DataStream<String> messageStream = env.addSource(new SimpleStringGenerator());
 
 		// write stream to Kafka
+
+		KeyedSerializationSchemaWrapper<String> wrapper = new KeyedSerializationSchemaWrapper<String>(new SimpleStringSchema());
+
 		messageStream.addSink(new FlinkKafkaProducer09<String>(
 				parameterTool.getRequired("topic"),
-				new KeyedSerializationSchemaWrapper(new SimpleStringSchema()),
+				wrapper,
                 parameterTool.getProperties()));
 
 		env.execute();
@@ -80,7 +83,7 @@ public class WriteIntoKafka {
 	}
 
 
-	public static class SimpleStringSchema implements DeserializationSchema<String>, SerializationSchema<String, byte[]> {
+	public static class SimpleStringSchema implements DeserializationSchema<String>, SerializationSchema<String> {
 		private static final long serialVersionUID = 1L;
 
 		public SimpleStringSchema() {
